@@ -1,0 +1,164 @@
+//+------------------------------------------------------------------+
+//|                                                   Components.mqh |
+//|                                  Copyright 2024, MetaQuotes Ltd. |
+//|                                             https://www.mql5.com |
+//+------------------------------------------------------------------+
+#property copyright "Copyright 2024, MetaQuotes Ltd."
+#property link      "https://www.mql5.com"
+#property strict
+
+#include <Controls/Dialog.mqh>
+#include <Controls/Label.mqh>
+#include <Controls/Button.mqh>
+#include <Controls/RadioGroup.mqh>
+#include <Controls/CheckGroup.mqh>
+#include <Controls/ListView.mqh>
+#include <Controls/ComboBox.mqh>
+#include <Controls/SpinEdit.mqh>
+
+
+CAppDialog interfacePanel;
+CDialog dialog1,dialog2;
+CLabel labelEnterTrade,labelEnterTradePanelRisk,labelOpenPos,labelSymbolRisk;
+CButton buttonSell,buttonBuy,buttonSellPending,buttonBuyPending,buttonCancle,buttonSet;
+CEdit editRisk;
+CBmpButton bmp1;
+CRadioGroup radioGroupRisk,radioGroupRiskPercent;
+CCheckGroup checkGroup1;
+CListView listViewRisk;
+CComboBox comboBox1;
+CWndClient wndEnterTradeLabel,wndEnterTradePanel,wndOpenPosLabel,wndOpenPosPanel;
+CSpinEdit spinEditRisk;
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void panel()
+  {
+   interfacePanel.Create(0,"interfacePanel",0,5,20,365,800);
+   interfacePanel.Caption("Trade Panel");
+//---
+   wndEnterTradeLabel.Create(0,"wndEnterTradeLabel",0,0,0,352,30);
+   wndEnterTradeLabel.ColorBackground(clrGray);
+   wndEnterTradeLabel.BorderType(BORDER_RAISED);
+   interfacePanel.Add(wndEnterTradeLabel);
+
+   wndEnterTradePanel.Create(0,"wndEnterTradePanel",0,0,0,352,150);
+   wndEnterTradePanel.Shift(0,30);
+   wndEnterTradePanel.BorderType(BORDER_RAISED);
+   interfacePanel.Add(wndEnterTradePanel);
+//---
+   wndOpenPosLabel.Create(0,"wndOpenPosLabel",0,0,0,352,30);
+   wndOpenPosLabel.ColorBackground(clrGray);
+   wndOpenPosLabel.Shift(0,180);
+   wndOpenPosLabel.BorderType(BORDER_RAISED);
+   interfacePanel.Add(wndOpenPosLabel);
+
+   wndOpenPosPanel.Create(0,"wndOpenPosPanel",0,0,0,352,150);
+   wndOpenPosPanel.Shift(0,210);
+   wndOpenPosPanel.BorderType(BORDER_RAISED);
+   interfacePanel.Add(wndOpenPosPanel);
+//---
+   labelEnterTrade.Create(0,"labelEnterTrade",0,0,0,0,0);
+   labelEnterTrade.Text("ENTER TRADE PANEL");
+   labelEnterTrade.FontSize(14);
+   labelEnterTrade.Shift(5,0);
+   wndEnterTradeLabel.Add(labelEnterTrade);
+
+   labelEnterTradePanelRisk.Create(0,"labelEnterTradePanelRisk",0,0,0,0,0);
+   labelEnterTradePanelRisk.Text("Risk");
+   labelEnterTradePanelRisk.FontSize(12);
+   labelEnterTradePanelRisk.Shift(10,20);
+   wndEnterTradePanel.Add(labelEnterTradePanelRisk);
+
+   labelSymbolRisk.Create(0,"labelSymbolRisk",0,0,0,0,0);
+   labelSymbolRisk.Text("");
+   labelSymbolRisk.FontSize(12);
+   labelSymbolRisk.Shift(135,20);
+   wndEnterTradePanel.Add(labelSymbolRisk);
+//---
+   radioGroupRisk.Create(0,"radioGroupRisk",0,0,0,70,60);
+   radioGroupRisk.AddItem("$");
+   radioGroupRisk.AddItem("%");
+   radioGroupRisk.AddItem("Lot");
+   radioGroupRisk.Shift(272,5);
+   wndEnterTradePanel.Add(radioGroupRisk);
+
+   radioGroupRiskPercent.Create(0,"radioGroupRiskPercent",0,0,0,115,60);
+   radioGroupRiskPercent.AddItem("Balance");
+   radioGroupRiskPercent.AddItem("Equity");
+   radioGroupRiskPercent.AddItem("FreeMargin");
+   radioGroupRiskPercent.Shift(157,5);
+   radioGroupRiskPercent.Hide();
+   wndEnterTradePanel.Add(radioGroupRiskPercent);
+//---
+   buttonBuy.Create(0,"buttonBuy",0,0,0,70,30);
+   buttonBuy.Shift(10,70);
+   buttonBuy.Text("BUY");
+   buttonBuy.ColorBackground(clrLightGreen);
+   wndEnterTradePanel.Add(buttonBuy);
+
+   buttonSell.Create(0,"buttonSell",0,0,0,70,30);
+   buttonSell.Shift(10,110);
+   buttonSell.Text("SELL");
+   buttonSell.ColorBackground(clrLightPink);
+   wndEnterTradePanel.Add(buttonSell);
+
+   buttonBuyPending.Create(0,"buttonBuyPending",0,0,0,70,30);
+   buttonBuyPending.Shift(90,70);
+   buttonBuyPending.Text("BUY.PE");
+   buttonBuyPending.ColorBackground(clrLightGreen);
+   wndEnterTradePanel.Add(buttonBuyPending);
+
+   buttonSellPending.Create(0,"buttonSellPending",0,0,0,70,30);
+   buttonSellPending.Shift(90,110);
+   buttonSellPending.Text("SELL.PE");
+   buttonSellPending.ColorBackground(clrLightPink);
+   wndEnterTradePanel.Add(buttonSellPending);
+   
+      buttonCancle.Create(0,"buttonCancle",0,0,0,70,70);
+   buttonCancle.Shift(192,70);
+   buttonCancle.Text("CANCLE");
+   buttonCancle.ColorBackground(clrLightGray);
+   wndEnterTradePanel.Add(buttonCancle);
+
+   buttonSet.Create(0,"buttonSet",0,0,0,70,70);
+   buttonSet.Shift(272,70);
+   buttonSet.Text("SET >>>");
+   buttonSet.ColorBackground(clrLightCyan);
+   wndEnterTradePanel.Add(buttonSet);
+
+
+//---
+   spinEditRisk.Create(0,"spinEditRisk",0,0,0,70,30);
+   spinEditRisk.Shift(57,18);
+   spinEditRisk.MaxValue(10);
+   spinEditRisk.MinValue(1);
+   wndEnterTradePanel.Add(spinEditRisk);
+//---
+   labelOpenPos.Create(0,"labelOpenPos",0,0,0,0,0);
+   labelOpenPos.Text("OPEN POSITIONS");
+   labelOpenPos.FontSize(14);
+   labelOpenPos.Shift(5,0);
+   wndOpenPosLabel.Add(labelOpenPos);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   interfacePanel.Run();
+  }
+//+------------------------------------------------------------------+

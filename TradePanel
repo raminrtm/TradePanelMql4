@@ -1,0 +1,205 @@
+//+------------------------------------------------------------------+
+//|                                                   TradePanel.mq4 |
+//|                                  Copyright 2024, MetaQuotes Ltd. |
+//|                                             https://www.mql5.com |
+//+------------------------------------------------------------------+
+#property copyright "Copyright 2024, MetaQuotes Ltd."
+#property link      "https://www.mql5.com"
+#property version   "1.00"
+#property strict
+
+#include "Include\\Components.mqh"
+double bidPrice = 0;
+double askPrice = 0;
+
+bool bidLine = false;
+bool askLine = false;
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+  {
+   panel();
+   bidPrice = SymbolInfoDouble(_Symbol,SYMBOL_BID);
+   askPrice = SymbolInfoDouble(_Symbol,SYMBOL_ASK);
+
+   return(INIT_SUCCEEDED);
+  }
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+  {
+   ObjectDelete(0,"buttonBuyObj");
+   ObjectDelete(0,"buttonSellObj");
+   ObjectDelete(0,"buttonBuyObjTp");
+   ObjectDelete(0,"buttonBuyObjSl");
+   ObjectDelete(0,"buttonSellObj");
+   ObjectDelete(0,"buttonBuyObj");
+
+
+
+
+
+   interfacePanel.Destroy(reason);
+
+
+  }
+//+------------------------------------------------------------------+
+//| Expert tick function                                             |
+//+------------------------------------------------------------------+
+void OnTick()
+  {
+   if(bidLine)
+     {
+      if(bidPrice > SymbolInfoDouble(_Symbol,SYMBOL_BID) || bidPrice < SymbolInfoDouble(_Symbol,SYMBOL_BID))
+        {
+         ObjectDelete(0,"buttonBuyObj");
+         ObjectCreate(0,"buttonBuyObj",OBJ_HLINE,0,0,SymbolInfoDouble(_Symbol,SYMBOL_BID));
+         ObjectSetInteger(0,"buttonBuyObj",OBJPROP_COLOR,clrWhite);
+         ObjectSetInteger(0,"buttonBuyObj",OBJPROP_WIDTH,5);
+         ObjectSetInteger(0,"buttonBuyObj",OBJPROP_BACK,true);
+        }
+     }
+
+   if(askLine)
+     {
+      if(askLine > SymbolInfoDouble(_Symbol,SYMBOL_BID) || askLine < SymbolInfoDouble(_Symbol,SYMBOL_BID))
+        {
+         ObjectDelete(0,"buttonSellObj");
+         ObjectCreate(0,"buttonSellObj",OBJ_HLINE,0,0,SymbolInfoDouble(_Symbol,SYMBOL_ASK));
+         ObjectSetInteger(0,"buttonSellObj",OBJPROP_COLOR,clrWhite);
+         ObjectSetInteger(0,"buttonSellObj",OBJPROP_WIDTH,5);
+         ObjectSetInteger(0,"buttonSellObj",OBJPROP_BACK,true);
+        }
+     }
+  }
+//+------------------------------------------------------------------+
+//| ChartEvent function                                              |
+//+------------------------------------------------------------------+
+void OnChartEvent(const int id,
+                  const long &lparam,
+                  const double &dparam,
+                  const string &sparam)
+  {
+   interfacePanel.OnEvent(id,lparam,dparam,sparam);
+//---RADIO GROUP CLICK
+   if(id == CHARTEVENT_OBJECT_CLICK && (sparam == "radioGroupRiskItem0Button" || sparam == "radioGroupRiskItem0Label"))
+     {
+      labelSymbolRisk.Text("$");
+      radioGroupRiskPercent.Hide();
+     }
+   if(id == CHARTEVENT_OBJECT_CLICK && (sparam == "radioGroupRiskItem1Button" || sparam == "radioGroupRiskItem1Label"))
+     {
+      labelSymbolRisk.Text("%");
+      radioGroupRiskPercent.Show();
+     }
+   if(id == CHARTEVENT_OBJECT_CLICK && (sparam == "radioGroupRiskItem2Button" || sparam == "radioGroupRiskItem2Label"))
+     {
+      labelSymbolRisk.Text("Lot");
+      radioGroupRiskPercent.Hide();
+     }
+//---BUTTON CLICK
+   if(id == CHARTEVENT_OBJECT_CLICK && sparam == "buttonBuy")
+     {
+      buttonBuy.ColorBackground(clrGold);
+      buttonSell.ColorBackground(clrLightPink);
+      buttonBuyPending.ColorBackground(clrLightGreen);
+      buttonSellPending.ColorBackground(clrLightPink);
+      ObjectDelete(0,"buttonSellObj");
+
+      bidLine = true;
+      askLine = false;
+
+      ObjectCreate(0,"buttonBuyObj",OBJ_HLINE,0,0,SymbolInfoDouble(_Symbol,SYMBOL_BID));
+      ObjectSetInteger(0,"buttonBuyObj",OBJPROP_COLOR,clrWhite);
+      ObjectSetInteger(0,"buttonBuyObj",OBJPROP_WIDTH,5);
+      ObjectSetInteger(0,"buttonBuyObj",OBJPROP_BACK,true);
+
+      ObjectCreate(0,"buttonBuyObjSl",OBJ_HLINE,0,0,SymbolInfoDouble(_Symbol,SYMBOL_BID)-200*_Point);
+      ObjectSetInteger(0,"buttonBuyObjSl",OBJPROP_COLOR,clrRed);
+      ObjectSetInteger(0,"buttonBuyObjSl",OBJPROP_WIDTH,5);
+      ObjectSetInteger(0,"buttonBuyObjSl",OBJPROP_BACK,true);
+      ObjectSetInteger(0,"buttonBuyObjSl",OBJPROP_SELECTED,true);
+
+
+      ObjectCreate(0,"buttonBuyObjTp",OBJ_HLINE,0,0,SymbolInfoDouble(_Symbol,SYMBOL_BID)+200*_Point);
+      ObjectSetInteger(0,"buttonBuyObjTp",OBJPROP_COLOR,clrGreen);
+      ObjectSetInteger(0,"buttonBuyObjTp",OBJPROP_WIDTH,5);
+      ObjectSetInteger(0,"buttonBuyObjTp",OBJPROP_BACK,true);
+      ObjectSetInteger(0,"buttonBuyObjTp",OBJPROP_SELECTED,true);
+
+
+     }
+
+   if(id == CHARTEVENT_OBJECT_CLICK && sparam == "buttonSell")
+     {
+      buttonBuy.ColorBackground(clrLightGreen);
+      buttonSell.ColorBackground(clrGold);
+      buttonBuyPending.ColorBackground(clrLightGreen);
+      buttonSellPending.ColorBackground(clrLightPink);
+      ObjectDelete(0,"buttonBuyObjTp");
+      ObjectDelete(0,"buttonBuyObjSl");
+      ObjectDelete(0,"buttonBuyObj");
+
+      bidLine = false;
+      askLine = true;
+
+      ObjectCreate(0,"buttonSellObj",OBJ_HLINE,0,0,SymbolInfoDouble(_Symbol,SYMBOL_ASK));
+      ObjectSetInteger(0,"buttonSellObj",OBJPROP_COLOR,clrWhite);
+      ObjectSetInteger(0,"buttonSellObj",OBJPROP_WIDTH,5);
+      ObjectSetInteger(0,"buttonSellObj",OBJPROP_BACK,true);
+
+
+
+     }
+
+   if(id == CHARTEVENT_OBJECT_CLICK && sparam == "buttonBuyPending")
+     {
+      buttonBuy.ColorBackground(clrLightGreen);
+      buttonSell.ColorBackground(clrLightPink);
+      buttonBuyPending.ColorBackground(clrGold);
+      buttonSellPending.ColorBackground(clrLightPink);
+      ObjectDelete(0,"buttonBuyObjTp");
+      ObjectDelete(0,"buttonBuyObjSl");
+      ObjectDelete(0,"buttonSellObj");
+      ObjectDelete(0,"buttonBuyObj");
+
+      bidLine = false;
+      askLine = false;
+
+     }
+
+   if(id == CHARTEVENT_OBJECT_CLICK && sparam == "buttonSellPending")
+     {
+      buttonBuy.ColorBackground(clrLightGreen);
+      buttonSell.ColorBackground(clrLightPink);
+      buttonBuyPending.ColorBackground(clrLightGreen);
+      buttonSellPending.ColorBackground(clrGold);
+      ObjectDelete(0,"buttonBuyObjTp");
+      ObjectDelete(0,"buttonBuyObjSl");
+      ObjectDelete(0,"buttonSellObj");
+      ObjectDelete(0,"buttonBuyObj");
+
+      bidLine = false;
+      askLine = false;
+
+     }
+
+   if(id == CHARTEVENT_OBJECT_CLICK && sparam == "buttonCancle")
+     {
+      buttonBuy.ColorBackground(clrLightGreen);
+      buttonSell.ColorBackground(clrLightPink);
+      buttonBuyPending.ColorBackground(clrLightGreen);
+      buttonSellPending.ColorBackground(clrLightPink);
+      ObjectDelete(0,"buttonBuyObjTp");
+      ObjectDelete(0,"buttonBuyObjSl");
+      ObjectDelete(0,"buttonSellObj");
+      ObjectDelete(0,"buttonBuyObj");
+
+      bidLine = false;
+      askLine = false;
+
+     }
+  }
+//+------------------------------------------------------------------+

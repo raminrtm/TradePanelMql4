@@ -16,13 +16,15 @@
 #include <Controls/ComboBox.mqh>
 #include <Controls/SpinEdit.mqh>
 
+#resource "\\Experts\\Projects\\Trade Panel\\Res\\DownDisable.bmp"
+#resource "\\Experts\\Projects\\Trade Panel\\Res\\UpDisable.bmp"
 
 CAppDialog interfacePanel;
 CDialog dialog1,dialog2;
 CLabel labelEnterTrade,labelEnterTradePanelRisk,labelOpenPos,labelSymbolRisk;
 CButton buttonSell,buttonBuy,buttonSellPending,buttonBuyPending,buttonCancle,buttonSet;
 CEdit editRisk;
-CBmpButton bmp1;
+CBmpButton bmpButtonRiskPlus,bmpButtonRiskMinus;
 CRadioGroup radioGroupRisk,radioGroupRiskPercent;
 CCheckGroup checkGroup1;
 CListView listViewRisk;
@@ -114,8 +116,8 @@ void panel()
    buttonSellPending.Text("SELL.PE");
    buttonSellPending.ColorBackground(clrLightPink);
    wndEnterTradePanel.Add(buttonSellPending);
-   
-      buttonCancle.Create(0,"buttonCancle",0,0,0,70,70);
+
+   buttonCancle.Create(0,"buttonCancle",0,0,0,70,70);
    buttonCancle.Shift(192,70);
    buttonCancle.Text("CANCLE");
    buttonCancle.ColorBackground(clrLightGray);
@@ -126,14 +128,23 @@ void panel()
    buttonSet.Text("SET >>>");
    buttonSet.ColorBackground(clrLightCyan);
    wndEnterTradePanel.Add(buttonSet);
-
-
 //---
-   spinEditRisk.Create(0,"spinEditRisk",0,0,0,70,30);
-   spinEditRisk.Shift(57,18);
-   spinEditRisk.MaxValue(10);
-   spinEditRisk.MinValue(1);
-   wndEnterTradePanel.Add(spinEditRisk);
+   editRisk.Create(0,"editRisk",0,0,0,60,30);
+   editRisk.Shift(52,18);
+   editRisk.FontSize(12);
+   editRisk.Text("0.01");
+   editRisk.TextAlign(ALIGN_CENTER);
+   wndEnterTradePanel.Add(editRisk);
+//---
+   bmpButtonRiskPlus.Create(0,"bmpButtonRiskPlus",0,0,0,0,0);
+   bmpButtonRiskPlus.BmpNames("::Experts\\Projects\\Trade Panel\\Res\\UpDisable.bmp");
+   bmpButtonRiskPlus.Shift(112,16);
+   wndEnterTradePanel.Add(bmpButtonRiskPlus);
+
+   bmpButtonRiskMinus.Create(0,"bmpButtonRiskMinus",0,0,0,0,0);
+   bmpButtonRiskMinus.BmpNames("::Experts\\Projects\\Trade Panel\\Res\\DownDisable.bmp");
+   bmpButtonRiskMinus.Shift(112,35);
+   wndEnterTradePanel.Add(bmpButtonRiskMinus);
 //---
    labelOpenPos.Create(0,"labelOpenPos",0,0,0,0,0);
    labelOpenPos.Text("OPEN POSITIONS");
@@ -161,4 +172,5 @@ void panel()
 
    interfacePanel.Run();
   }
+//+------------------------------------------------------------------+
 //+------------------------------------------------------------------+

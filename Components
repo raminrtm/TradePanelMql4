@@ -16,19 +16,15 @@
 #include <Controls/ComboBox.mqh>
 #include <Controls/SpinEdit.mqh>
 
-#resource "\\Experts\\Projects\\Trade Panel\\Res\\DownDisable.bmp"
-#resource "\\Experts\\Projects\\Trade Panel\\Res\\UpDisable.bmp"
+#resource "\\Experts\\Projects\\TradePanel\\Res\\DownDisable.bmp"
+#resource "\\Experts\\Projects\\TradePanel\\Res\\UpDisable.bmp"
 
 CAppDialog interfacePanel;
-CDialog dialog1,dialog2;
 CLabel labelEnterTrade,labelEnterTradePanelRisk,labelOpenPos,labelSymbolRisk;
 CButton buttonSell,buttonBuy,buttonSellPending,buttonBuyPending,buttonCancle,buttonSet;
 CEdit editRisk;
 CBmpButton bmpButtonRiskPlus,bmpButtonRiskMinus;
 CRadioGroup radioGroupRisk,radioGroupRiskPercent;
-CCheckGroup checkGroup1;
-CListView listViewRisk;
-CComboBox comboBox1;
 CWndClient wndEnterTradeLabel,wndEnterTradePanel,wndOpenPosLabel,wndOpenPosPanel;
 CSpinEdit spinEditRisk;
 //+------------------------------------------------------------------+
@@ -137,12 +133,12 @@ void panel()
    wndEnterTradePanel.Add(editRisk);
 //---
    bmpButtonRiskPlus.Create(0,"bmpButtonRiskPlus",0,0,0,0,0);
-   bmpButtonRiskPlus.BmpNames("::Experts\\Projects\\Trade Panel\\Res\\UpDisable.bmp");
+   bmpButtonRiskPlus.BmpNames("::Experts\\Projects\\TradePanel\\Res\\UpDisable.bmp");
    bmpButtonRiskPlus.Shift(112,16);
    wndEnterTradePanel.Add(bmpButtonRiskPlus);
 
    bmpButtonRiskMinus.Create(0,"bmpButtonRiskMinus",0,0,0,0,0);
-   bmpButtonRiskMinus.BmpNames("::Experts\\Projects\\Trade Panel\\Res\\DownDisable.bmp");
+   bmpButtonRiskMinus.BmpNames("::Experts\\Projects\\TradePanel\\Res\\DownDisable.bmp");
    bmpButtonRiskMinus.Shift(112,35);
    wndEnterTradePanel.Add(bmpButtonRiskMinus);
 //---
@@ -151,24 +147,6 @@ void panel()
    labelOpenPos.FontSize(14);
    labelOpenPos.Shift(5,0);
    wndOpenPosLabel.Add(labelOpenPos);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
    interfacePanel.Run();
   }

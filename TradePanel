@@ -20,6 +20,8 @@ bool sell = false;
 bool buyPending = false;
 bool sellPending = false;
 
+string riskType = "";
+string riskPercentType = "";
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
@@ -98,16 +100,37 @@ void OnChartEvent(const int id,
       labelSymbolRisk.Text("$");
       radioGroupRiskPercent.Hide();
 
+      riskType = "MONEY";
+      editRisk.Text("0.50");
      }
    if(id == CHARTEVENT_OBJECT_CLICK && (sparam == "radioGroupRiskItem1Button" || sparam == "radioGroupRiskItem1Label"))
      {
       labelSymbolRisk.Text("%");
       radioGroupRiskPercent.Show();
+
+      riskType = "PERCENT";
+      editRisk.Text("0.10");
      }
    if(id == CHARTEVENT_OBJECT_CLICK && (sparam == "radioGroupRiskItem2Button" || sparam == "radioGroupRiskItem2Label"))
      {
       labelSymbolRisk.Text("Lot");
       radioGroupRiskPercent.Hide();
+
+      riskType = "LOTS";
+      editRisk.Text("0.01");
+     }
+
+   if(id == CHARTEVENT_OBJECT_CLICK && (sparam == "radioGroupRiskPercentItem0Button" || sparam == "radioGroupRiskPercentItem0Label"))
+     {
+      riskPercentType = "BALANCE";
+     }
+   if(id == CHARTEVENT_OBJECT_CLICK && (sparam == "radioGroupRiskPercentItem1Button" || sparam == "radioGroupRiskPercentItem1Label"))
+     {
+      riskPercentType = "EQUITY";
+     }
+   if(id == CHARTEVENT_OBJECT_CLICK && (sparam == "radioGroupRiskPercentItem2Button" || sparam == "radioGroupRiskPercentItem2Label"))
+     {
+      riskPercentType = "FREEMARGIN";
      }
 //---BUTTON CLICK
 //---//---BUTTON BUY
@@ -346,122 +369,232 @@ void OnChartEvent(const int id,
       if(buy)
         {
          double price = SymbolInfoDouble(_Symbol,SYMBOL_BID);
-         double Tp = ObjectGetDouble(0,"buttonBuyObjTp",OBJPROP_PRICE,0);
+         double tp = ObjectGetDouble(0,"buttonBuyObjTp",OBJPROP_PRICE,0);
+         double sl = ObjectGetDouble(0,"buttonBuyObjSl",OBJPROP_PRICE,0);
 
+         if(!OrderSend(_Symbol,OP_BUY,(double)editRisk.Text(),price,0,sl,tp))
+            Print("Can Not Open Position");
         }
       if(sell)
         {
          double price = SymbolInfoDouble(_Symbol,SYMBOL_ASK);
-         double Tp = ObjectGetDouble(0,"buttonSellObjTp",OBJPROP_PRICE,0);
+         double tp = ObjectGetDouble(0,"buttonSellObjTp",OBJPROP_PRICE,0);
+         double sl = ObjectGetDouble(0,"buttonSellObjSl",OBJPROP_PRICE,0);
 
+         if(!OrderSend(_Symbol,OP_SELL,(double)editRisk.Text(),price,0,sl,tp))
+            Print("Can Not Open Position");
         }
       if(buyPending)
         {
+         double price = ObjectGetDouble(0,"buttonBuyPendingObj",OBJPROP_PRICE,0);
+         double tp = ObjectGetDouble(0,"buttonBuyPendingObjTp",OBJPROP_PRICE,0);
+         double sl = ObjectGetDouble(0,"buttonBuyPendingObjSl",OBJPROP_PRICE,0);
 
+         if(price > SymbolInfoDouble(_Symbol,SYMBOL_BID))
+           {
+            if(!OrderSend(_Symbol,OP_BUYSTOP,(double)editRisk.Text(),price,0,sl,tp))
+               Print("Can Not Open Position");
+           }
+         else
+            if(price < SymbolInfoDouble(_Symbol,SYMBOL_BID))
+              {
+               if(!OrderSend(_Symbol,OP_BUYLIMIT,(double)editRisk.Text(),price,0,sl,tp))
+                  Print("Can Not Open Position");
+              }
         }
       if(sellPending)
         {
+         double price = ObjectGetDouble(0,"buttonSellPendingObj",OBJPROP_PRICE,0);
+         double tp = ObjectGetDouble(0,"buttonSellPendingObjTp",OBJPROP_PRICE,0);
+         double sl = ObjectGetDouble(0,"buttonSellPendingObjSl",OBJPROP_PRICE,0);
 
+         if(price > SymbolInfoDouble(_Symbol,SYMBOL_BID))
+           {
+            if(!OrderSend(_Symbol,OP_SELLLIMIT,(double)editRisk.Text(),price,0,sl,tp))
+               Print("Can Not Open Position");
+           }
+         else
+            if(price < SymbolInfoDouble(_Symbol,SYMBOL_BID))
+              {
+               if(!OrderSend(_Symbol,OP_SELLSTOP,(double)editRisk.Text(),price,0,sl,tp))
+                  Print("Can Not Open Position");
+              }
         }
      }
 //---//---BMP Button Risk
    double minLot = SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MIN);
    double maxLot = SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MAX);
    double lotStep = SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_STEP);
-   double lotSize = 0.0;
+   double lotEditBox = 0.0;
+
    if(id == CHARTEVENT_OBJECT_CLICK && sparam == "bmpButtonRiskPlus")
      {
-      lotSize = (double)editRisk.Text();
-      lotSize = (lotSize += lotStep) > maxLot ? maxLot : lotSize;
-      editRisk.Text(DoubleToString(lotSize,2));
+      if(riskType == "LOTS")
+        {
+         lotEditBox = (double)editRisk.Text();
+         lotEditBox = (lotEditBox += lotStep) > maxLot ? maxLot : lotEditBox;
+         editRisk.Text(DoubleToString(lotEditBox,2));
+        }
+      else
+         if(riskType == "MONEY")
+           {
+            lotEditBox = (double)editRisk.Text();
+            lotEditBox = (lotEditBox += 0.5) > 100 ? 100 : lotEditBox;
+            editRisk.Text(DoubleToString(lotEditBox,2));
+           }
+         else
+            if(riskType == "PERCENT")
+              {
+               lotEditBox = (double)editRisk.Text();
+               lotEditBox = (lotEditBox += 0.1) > 10 ? 10 : lotEditBox;
+               editRisk.Text(DoubleToString(lotEditBox,2));
+              }
      }
    if(id == CHARTEVENT_OBJECT_CLICK && sparam == "bmpButtonRiskMinus")
      {
-      lotSize = (double)editRisk.Text();
-      lotSize = (lotSize -= lotStep) < minLot ? minLot : lotSize;
-      editRisk.Text(DoubleToString(lotSize,2));
+      if(riskType == "LOTS")
+        {
+         lotEditBox = (double)editRisk.Text();
+         lotEditBox = (lotEditBox -= lotStep) < minLot ? minLot : lotEditBox;
+         editRisk.Text(DoubleToString(lotEditBox,2));
+        }
+      else
+         if(riskType == "MONEY")
+           {
+            lotEditBox = (double)editRisk.Text();
+            lotEditBox = (lotEditBox -= 0.5) < 0.5 ? 0.5 : lotEditBox;
+            editRisk.Text(DoubleToString(lotEditBox,2));
+           }
+         else
+            if(riskType == "PERCENT")
+              {
+               lotEditBox = (double)editRisk.Text();
+               lotEditBox = (lotEditBox -= 0.1) < 0.1 ? 0.1 : lotEditBox;
+               editRisk.Text(DoubleToString(lotEditBox,2));
+              }
      }
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-//double lotSizeCalce(int stopLoss)
-//  {
-////---only use for forex pairs
-////---stoploss should be in points
-//   double tickSize = SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE);
-//   double tickValue = SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_VALUE);
-//   double lotStep = SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_STEP);
-//   double minLot = SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MIN);
-//   double maxLot = SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MAX);
-//   double accountSize = 0;
-//   double lotSize = 0;
-//
-//   if(tickSize == 0 || tickValue == 0 || lotStep == 0)
-//      return -1;
-//   if(stopLoss <= 0)
-//      return -1;
-////---LOT SIZE FIX
-//   if(lotSizeMethod == lotSizeFix)
-//     {
-//      if(manualLotsSizeFix <= 0)
-//        {
-//         manualLotsSizeFix = minLot;
-//        }
-//      else
-//         if(manualLotsSizeFix > maxLot)
-//           {
-//            manualLotsSizeFix = maxLot;
-//           }
-//      //---
-//      return manualLotsSizeFix;
-//     }
-////---MONEY FIX
-//   if(lotSizeMethod == moneyFix)
-//     {
-//      lotSize = (manualMoneyFix/stopLoss*1.0)/tickValue;
-//      lotSize = NormalizeDouble(lotSize,2);
-//      if(lotSize <= 0)
-//        {
-//         lotSize = minLot;
-//        }
-//      else
-//         if(lotSize > maxLot)
-//           {
-//            lotSize = maxLot;
-//           }
-//      //---
-//      return lotSize;
-//     }
-////---ACCOUNT PERCENT
-//   if(lotSizeMethod == freeMarginPercent)
-//     {
-//      accountSize = AccountInfoDouble(ACCOUNT_MARGIN_FREE);
-//     }
-//   else
-//      if(lotSizeMethod == equityPercent)
-//        {
-//         accountSize = AccountInfoDouble(ACCOUNT_EQUITY);
-//        }
-//      else
-//         if(lotSizeMethod == balancePercent)
-//           {
-//            accountSize = AccountInfoDouble(ACCOUNT_BALANCE);
-//           }
-//
-//   double riskMoney = accountSize*(riskPercent/100);
-//   lotSize = (riskMoney/stopLoss*1.0)/tickValue;
-//   lotSize = NormalizeDouble(lotSize,2);
-//   if(lotSize <= 0)
-//     {
-//      lotSize = minLot;
-//     }
-//   else
-//      if(lotSize > maxLot)
-//        {
-//         lotSize = maxLot;
-//        }
-////---
-//   return lotSize;
-//  }
-////+------------------------------------------------------------------+
+double lotSizeCalce()
+  {
+//---only use for forex pairs
+//---stoploss should be in points
+   double tickSize = SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE);
+   double tickValue = SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_VALUE);
+   double lotStep = SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_STEP);
+   double minLot = SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MIN);
+   double maxLot = SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MAX);
+   double accountSize = 0;
+   double lotSize = 0;
+
+   if(tickSize == 0 || tickValue == 0 || lotStep == 0)
+      return -1;
+//---LOT SIZE FIX
+   if(riskType == "LOTS")
+     {
+      if((double)editRisk.Text() <= 0)
+        {
+         lotSize = minLot;
+        }
+      else
+         if((double)editRisk.Text() > maxLot)
+           {
+            lotSize = maxLot;
+           }
+      //---
+      return lotSize;
+     }
+//---MONEY FIX
+   if(riskType == "MONEY")
+     {
+      lotSize = ((double)editRisk.Text()/stopLossCalc()*1.0)/tickValue;
+      lotSize = NormalizeDouble(lotSize,2);
+      if(lotSize <= 0)
+        {
+         lotSize = minLot;
+        }
+      else
+         if(lotSize > maxLot)
+           {
+            lotSize = maxLot;
+           }
+      //---
+      return lotSize;
+     }
+//---ACCOUNT PERCENT
+   if(riskType == "PERCENT" && riskPercentType == "FREEMARGIN")
+     {
+      accountSize = AccountInfoDouble(ACCOUNT_MARGIN_FREE);
+     }
+   else
+      if(riskType == "PERCENT" && riskPercentType == "EQUITY")
+        {
+         accountSize = AccountInfoDouble(ACCOUNT_EQUITY);
+        }
+      else
+         if(riskType == "PERCENT" && riskPercentType == "BALANCE")
+           {
+            accountSize = AccountInfoDouble(ACCOUNT_BALANCE);
+           }
+
+   double riskMoney = accountSize*((double)editRisk.Text()/100);
+   lotSize = (riskMoney/stopLossCalc()*1.0)/tickValue;
+   lotSize = NormalizeDouble(lotSize,2);
+   if(lotSize <= 0)
+     {
+      lotSize = minLot;
+     }
+   else
+      if(lotSize > maxLot)
+        {
+         lotSize = maxLot;
+        }
+//---
+   return lotSize;
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+double stopLossCalc()
+  {
+   double stopLoss = 0.0;
+   if(buy)
+     {
+      stopLoss = SymbolInfoDouble(_Symbol,SYMBOL_BID) - ObjectGetDouble(0,"buttonBuyObjSl",OBJPROP_PRICE,0);
+      stopLoss = NormalizeDouble(stopLoss,_Digits);
+      return stopLoss;
+     }
+   else
+      if(sell)
+        {
+         stopLoss = ObjectGetDouble(0,"buttonSellObjSl",OBJPROP_PRICE,0) - SymbolInfoDouble(_Symbol,SYMBOL_ASK);
+         stopLoss = NormalizeDouble(stopLoss,_Digits);
+         return stopLoss;
+        }
+      else
+         if(buyPending)
+           {
+            double price = ObjectGetDouble(0,"buttonBuyPendingObj",OBJPROP_PRICE,0);
+            double sl = ObjectGetDouble(0,"buttonBuyPendingObjSl",OBJPROP_PRICE,0);
+            stopLoss = price - sl;
+            stopLoss = NormalizeDouble(stopLoss,_Digits);
+            return stopLoss;
+           }
+         else
+            if(sellPending)
+              {
+               double price = ObjectGetDouble(0,"buttonSellPendingObj",OBJPROP_PRICE,0);
+               double sl = ObjectGetDouble(0,"buttonSellPendingObjSl",OBJPROP_PRICE,0);
+               stopLoss = sl - price;
+               stopLoss = NormalizeDouble(stopLoss,_Digits);
+               return stopLoss;
+              }
+            else
+              {
+               return 0;
+              }
+   return 0;
+  }
+//+------------------------------------------------------------------+
